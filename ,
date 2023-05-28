@@ -1,0 +1,143 @@
+set-window-option -g mode-keys vi
+
+#set -g mouse-select-pane on
+#setw -g mode-mouse on
+
+set-option -g default-terminal "screen-256color"
+#set -g default-terminal "tmux"
+set-option -sa terminal-overrides ',xterm-256color:RGB'
+
+set-option -g focus-events on
+
+### screen-like keybindings
+unbind C-b
+set -g prefix C-a
+bind C-a send-prefix
+bind a send-prefix
+bind A command-prompt "rename-window %%"
+setw -g automatic-rename off
+
+bind Escape copy-mode
+# default is too slow which is annoying during heavy-use of the copy buffer
+set -s escape-time 100
+
+# vi-keys everywhere; anything else would be uncivilized
+setw -g mode-keys vi
+set -g status-keys vi
+setw -g xterm-keys on
+
+# Moving between windows/panes
+bind C-a last-window
+bind " " next-window
+bind BSpace previous-window
+bind '"' choose-window
+#set -g mouse-select-pane on
+bind h select-pane -L
+bind j select-pane -D
+bind k select-pane -U
+bind l select-pane -R
+bind H command-prompt "resize-pane -L %1"
+bind J command-prompt "resize-pane -D %1"
+bind K command-prompt "resize-pane -U %1"
+bind L command-prompt "resize-pane -R %1"
+bind y setw synchronize-panes
+bind s command-prompt "swap-window -t %1"
+bind S command-prompt "move-window -r -t %1"
+
+# splits
+bind C new-window -c "#{pane_current_path}"
+bind | split-window -h -c "#{pane_current_path}"
+bind - split-window -v -c "#{pane_current_path}"
+bind r next-layout
+bind R previous-layout
+bind p command-prompt -p "put pane into:"  "join-pane -t '%%'"
+bind P command-prompt -p "pull pane from:"  "join-pane -s '%%'"
+
+unbind %
+bind | split-window -h
+unbind -
+bind '\' split-window -v
+# maximizing and restoring panes.
+bind x resize-pane -Z
+
+# pre-configured window and pane layouts
+bind W run "tmux renamew work; tmux splitw -l 3; tmux selectp -U"
+
+# nice, big scrollback buffer (lines)
+set -g history-limit 99999
+
+# read and write and delete paste buffer
+bind > command-prompt -p "Write buffer to xclip:" \
+    "run 'tmux save-buffer -b %1 - | xclip -i -select clipboard'"
+bind < command-prompt -p "Read from xclip into buffer:" \
+        "run 'xclip -o -selection clipboard | tmux load-buffer -b %1 -'"
+bind + command-prompt "delete-buffer -b %1"
+#bind -t vi-copy y copy-pipe 'xclip -in -selection clipboard'
+
+# toggle activity/silence monitoring
+bind m setw monitor-activity
+bind M command-prompt -p "monitor-silence (seconds)" "setw monitor-silence %%"
+
+# set xterm window status
+set-option -g set-titles on
+set-option -g set-titles-string '#H  ###I.#P  #W (#S)'
+
+
+### Colors
+#set -g status-bg black
+#set -g status-fg white
+#set -g message-bg green
+#set -g message-fg black
+#setw -g window-status-bell-attr blink
+#setw -g window-status-bell-bg green
+#setw -g window-status-bell-fg black
+#setw -g window-status-current-bg white
+#setw -g window-status-current-fg blue
+
+set -g @themepack 'powerline/block/blue'
+
+
+### Status bar
+# set -g status-right-length 50
+#set -g status-right "#[fg=magenta] @#H #[fg=cyan]%Y-%m-%d #[fg=yellow]%a #[fg=green]%H:%M #[fg=blue]#(uptime|sed -e 's/.*: //g' -e 's/,//g')#[default]"
+
+set -g status-right '#{battery_status_bg} Batt: #{battery_icon} #{battery_percentage} #{battery_remain} | %a %h-%d %H:%M '
+set -g @batt_icon_charge_tier8 '🌕'
+set -g @batt_icon_charge_tier7 '🌖'
+set -g @batt_icon_charge_tier6 '🌖'
+set -g @batt_icon_charge_tier5 '🌗'
+set -g @batt_icon_charge_tier4 '🌗'
+set -g @batt_icon_charge_tier3 '🌘'
+set -g @batt_icon_charge_tier2 '🌘'
+set -g @batt_icon_charge_tier1 '🌑'
+set -g @batt_icon_status_charged '🔋'
+set -g @batt_icon_status_charging '⚡'
+set -g @batt_icon_status_discharging '👎'
+set -g @batt_color_status_primary_charged '#3daee9'
+set -g @batt_color_status_primary_charging '#3daee9'
+
+# vim:ft=tmux'"'
+
+#maximizing and restoring panes.
+unbind +
+bind + new-window -d -n tmp \; swap-pane -s tmp.0 \; select-window -t tmp
+unbind -
+bind - last-window \; swap-pane -s tmp.0 \; kill-window -t tmp
+bind a send-prefix
+bind -n C-k send-keys -R \; clear-history
+
+set -g @plugin 'tmux-plugins/tpm'
+set -g @plugin 'tmux-plugins/tmux-yank'
+set -g @plugin 'tmux-plugins/tmux-resurrect'
+set -g @plugin 'jimeh/tmux-themepack'
+set -g @plugin 'tmux-plugins/tmux-battery'
+set -g @plugin 'erikw/tmux-powerline'
+set -g @plugin 'christoomey/vim-tmux-navigator'
+# set -g @plugin 'catppuccin/tmux'
+
+# set -g @treemux-tree-nvim-init-file '~/.tmux/plugins/treemux/configs/treemux_init.lua'
+# set -g @plugin 'kiyoon/treemux'
+
+run '~/.tmux/plugins/tpm/tpm'
+
+# unbind -n C-k
